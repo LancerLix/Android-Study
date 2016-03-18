@@ -1,0 +1,21 @@
+一、property animation和view animation的区别：
+	1.view animation只能作用于view，而且只能改变view很少的一些属性，比如scale或者rotation，但是不能改变background color，限制很多，property animation不存在这些问题，
+使用范围广泛。
+
+	2.view animation只能改变view的绘制，不能改变view本身。比如一个view动画把button从屏幕左边移动到右边，只是button被从左边绘制到了右边，button的实际click响应区域还
+在屏幕的左边。
+
+	3.view animation比property animation消耗更少的时间去setup，使用更少的代码量。
+
+二、property animation的工作原理：
+	property animation根据定义的duration，计算每个时间间隔（Frame refresh delay默认是10ms，可以修改）占总duration的百分比，然后把该百分比传给定义的Interpolator再计
+算出一个百分比，然后把起始值和结束值以及该百分比传给定义的Evaluator计算出每个时间间隔对应的值，回调给listener。
+
+三、ValueAnimator和ObjectAnimator的区别：
+	1.ObjectAnimator是ValueAnimator的子类，ValueAnimator只能计算出每个时间的值，并已ValueAnimation.AnimationUpdateListener的形式把计算出来的值通知给调用者，对具体对
+像的影响（设置）需要调用者自己来完成，而ObjectAnimator则可以自动完成设置，但是使用要比ValueAnimator复杂。
+
+	2.因为ObjectAnimator自动完成设置，所以被影响的对象必须有一个setter方法来给ObjectAnimator调用来改变对象对应的属性。如果ObjectAnimator构造的时候只传入一个值，这个
+值会被当作结束值，所以被影响的对象必须有一个getter方法来给ObjectAnimator调用来获得animation的起始值。
+
+四、如果animation被cancel，不仅onAnimationCancel()会被回调，onAnimationEnd()也会被调用。

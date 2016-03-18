@@ -1,1 +1,1 @@
-# Android-Study
+# This is a repository that record my reading of Android Devolope Guide.
