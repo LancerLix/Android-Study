@@ -1,0 +1,11 @@
+一、Android的组件元素<activity>，<service>, <receiver>, 和<provider>默认情况下都工作在<application>的android:process（系统默认提供）指定的进程下，他们都有android:process属性可以覆盖<application>的android:process，来指定该组件工作的进程。如果一个组件被启动并且当前系统没有其指定的process，系统会为其新建一个process，并让其工作在该process中，如果之前已有其他相同process属性的组件启动了一个process，该组件工作在该process。
+
+
+二、Android的每个process都会有一个main thread(已经拥有looper和messageQuene)来分发event处理UI控件的交互和调用组件的回调函数（onCreate,onKeyDown,etc.），所有工作在同一个process的组件都共用该thread。另外，所有UI控件的方法都不是线程安全的，方法内部会检查当前调用的线程，如果不是main thread会抛出异常，所以只允许在main thread里面去操作。
+
+
+三、
+Activity.runOnUiThread(Runnable)，View.post(Runnable)以及View.postDelayed(Runnable, long)可以做到在其他worker线程去访问UI线程从而确保UI控件的操作一定工作在UI线程，这种方式适合于代码操作比较简单，代码量不大的情况，一旦代码更加复杂，维护起来不方便。推荐使用在worker线程定义handler来达到与UI线程通信的目的或者使用AsyncTask。
+
+
+四、AsyncTask内部维护一个静态的ThreadPoolExecutor,所有的AsyncTask对象都在ThreadPoolExecutor执行，所以回调函数doInBackground()工作在worker线程，而AsyncTask内部维护还维护了一个静态的UI线程的handler,doInBackground()的执行结果通过message的形式发送到该handler，所以回调函数onPostExecute(result)工作在UI线程。
