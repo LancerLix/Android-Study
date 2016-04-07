@@ -9,3 +9,13 @@ Activity.runOnUiThread(Runnable)，View.post(Runnable)以及View.postDelayed(Runnab
 
 
 四、AsyncTask内部维护一个静态的ThreadPoolExecutor,所有的AsyncTask对象都在ThreadPoolExecutor执行，所以回调函数doInBackground()工作在worker线程，而AsyncTask内部维护还维护了一个静态的UI线程的handler,doInBackground()的执行结果通过message的形式发送到该handler，所以回调函数onPostExecute(result)工作在UI线程。
+
+
+五、如果调用IBindler中实现方法的地方与该IBindler运行在同一个process，该方法执行在调用者线程当中。如果调用IBindler中实现方法的地方与该IBindler不运行在同一个process，该方法执行在IBindler运行的process中从thread pool中取出的一个thread当中。因此如果是第二种情况，有多个process跨process调用IBindler中实现方法，在该IBindler运行的process中就会从thread pool中拿出多个thread来执行，这个时候一定要保证IBindler中实现方法的线程安全。例如：
+
+	1.Service的onBind()执行在service process的UI线程， onBind()返回的对象中的方法执行在service process中从thread pool中取出的一个thread当中。当有多个client bind service的时候，service process中就会有多个非UI线程去调用IBindler中实现方法。
+
+	2.ContentProvider的query(), insert(), delete(), update(), 以及 getType()等方法，如果跨process访问，也是执行在content provider process中从thread pool中取出的一个thread当中。
+
+
+六、android提供了一种基于RPC机制的IPC，跨process的Services就是基于这种实现。
