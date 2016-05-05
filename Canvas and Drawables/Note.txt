@@ -1,0 +1,14 @@
+一、Canvas其实是一个抽象的，用于在Bitmap上绘制的一个draw接口，提供了一系列的draw方法，想要在Bitmap上面绘制，需要生成一个Canvas，通过Canvas来实现在Bitmap上绘制。
+
+
+二、Drawable其实是一系列绘制描述的抽象集合，告诉需要在Bitmap（或者说是Canvas）上如何去绘制，绘制什么东西。
+
+
+
+三、放在res/drawable/下面的图片资源，aapt在编译的时候会进行优化，所以字节序会发生变化，如果想要通过字节流去获取图片资源并转化成bitmap，需要把资源放在res/raw/下面，aapt编译过程不会对这个目录下面的资源做优化处理。
+
+
+四、对于每一个drawable res(无论是图片资源还是xml资源),都对应一个ConstantState状态，当res第一次使用(getDrawable)时，会对应创建一个ConstantState并存储下来，下次如果是相同的res，就直接用该ConstantState存的属性创建新的drawable。如果是drawable res的类型是图片资源，创建drawable的时候会把该ConstantState作为一个BitmapState(继承ConstantState)存在drawable中，所有相同资源的drawable共享，其中一个drawable修改自身属性(比如alpha),都会直接修改BitmapState从而影响到其他drawable,所以如果是通过图片资源获取到drawable，尽量不要修改drawable自己的属性，而是使用view animation。通过xml资源创建不会影响其他drawable。
+
+
+五、
