@@ -4,11 +4,10 @@
 二、Drawable其实是一系列绘制描述的抽象集合，告诉需要在Bitmap（或者说是Canvas）上如何去绘制，绘制什么东西。
 
 
-
 三、放在res/drawable/下面的图片资源，aapt在编译的时候会进行优化，所以字节序会发生变化，如果想要通过字节流去获取图片资源并转化成bitmap，需要把资源放在res/raw/下面，aapt编译过程不会对这个目录下面的资源做优化处理。
 
 
 四、对于每一个drawable res(无论是图片资源还是xml资源),都对应一个ConstantState状态，当res第一次使用(getDrawable)时，会对应创建一个ConstantState并存储下来，下次如果是相同的res，就直接用该ConstantState存的属性创建新的drawable。如果是drawable res的类型是图片资源，创建drawable的时候会把该ConstantState作为一个BitmapState(继承ConstantState)存在drawable中，所有相同资源的drawable共享，其中一个drawable修改自身属性(比如alpha),都会直接修改BitmapState从而影响到其他drawable,所以如果是通过图片资源获取到drawable，尽量不要修改drawable自己的属性，而是使用view animation。通过xml资源创建不会影响其他drawable。
 
 
-五、
+五、Nine-patch是正常图片在外面围了一圈 1 pixel 宽的border,左边和上边的border(黑色部分)决定扩展所使用的像素应该来自哪片区域，右边和下边的border(黑色部分)决定内容显示的区域，也就是说当显示内容超过该规定区域，就会发生扩展。如果没有定义右边和下边border，显示内容区域使用左边和上边border所对应的区域。
