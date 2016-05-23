@@ -1,0 +1,10 @@
+一、<include />标签能够重用布局文件。在include标签中所有的Android:layout_*都是有效的，前提是必须要写layout_width和layout_height两个属性。所有在<include />标签定义有效属性，都会覆盖其重用的布局文件的root view,包括Android:id。
+
+
+二、<merge />标签在UI的结构优化中起着非常重要的作用，它可以删减多余的层级，优化UI。<merge/>多用于替换FrameLayout或者当一个布局包含另一个时，<merge/>标签消除视图层次结构中多余的视图组。例如你的主布局文件是垂直布局，引入了一个垂直布局的include，这是如果include布局使用的LinearLayout就没意义了，使用的话反而减慢你的UI表现。这时可以使用<merge/>标签优化。
+
+
+三、<ViewStub />标签最大的优点是当你需要时才会加载，使用他并不会影响UI初始化时的性能。各种不常用的布局想进度条、显示错误消息等可以使用<ViewStub />标签，以减少内存使用量，加快渲染速度。<ViewStub />是一个不可见的，大小为0的View。<ViewStub />的使用方式可以看成是开始不可见的<include>标签。
+
+
+四、当改变<ViewStub />的visibility的时候，<ViewStub />会被inflate,或者主动调用inflate()。当<ViewStub />被inflate之后，<ViewStub />将会被其引用的布局文件代替而移出view hierarchy，因此代码中不能保持一个<ViewStub />的长引用。<ViewStub />不支持<merge />标签的使用，但是<include />标签支持。

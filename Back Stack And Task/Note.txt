@@ -1,9 +1,11 @@
 一、Android把每个application当作一个task,为每个task默认生成一个activity stack,从本application启动的activity，默认情况下，会添加到本application task对应的stack中（即使
 activity定义在别的application当中）。
 
+
 二、非默认的情况，新的activity可能会加入到其他task（即新建的）对应的stack当中，具体有：
 	1.Intent flags 指定为 FLAG_ACTIVITY_NEW_TASK 。
 	2.Activity launchMode 指定为 singleTask 或 singleInstance 。
+
 
 三、所有activity都有taskAffinity属性，默认情况下，如果activity没有定义taskAffinity，同一个application下的activity有相同的taskAffinity，为该application的packageName。
 taskAffinity有2个主要作用：
@@ -12,13 +14,17 @@ taskAffinity有2个主要作用：
 	2.如果activity指定 allowTaskReparenting 为 true，当有taskAffinity相同的task到前台时，运行在其他非taskAffinity task stack中的activity会转移到该前台task对应的
 stack中。
 
+
 四、如果在manifest中和intent中都定义了launch mode,intent中的优先级高于manifest中。
+
 
 五、singleTask 和 singleInstance的唯一区别在于 singleTask 新建的task中，还能加入其他activity，而singleInstance新建的task中，只能存在一个activity，其他加入的activity
 都会被当作 FLAG_ACTIVITY_NEW_TASK 。
 
+
 六、如果一个task在后台时间过长没有被调到前台，系统会清空掉task对应stack中除了root activity(launch activity)的所有activtiy，下次该task被调用到前台时，只会存在root activity。
 可以通过对root activity(launch activity)定义 alwaysRetainTaskState， clearTaskOnLaunch，或者对activity定义 finishOnTaskLaunch 改变这种行为。
+
 
 七、singleTask 和 singleInstance 对应的activity启动时，会清除掉stack中所有在其之上的activity。因为当前活动的activity一定要保持在stack顶部。
 
