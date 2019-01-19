@@ -1,0 +1,61 @@
+一、Content Provider是一个抽象的，管理数据的接口，为他所管理的不同类型的数据(仓库，常用到的有databases和files，网络数据也可以先转换成databases和files)对外提供一个统一的类似于去操作表的一
+系列操作方法。也就是说Content Provider是一个抽象层，用户无需关心Content Provider所管理的数据(仓库)具体是什么类型，都提供统一的方法去访问。
+
+
+
+二、Content Resolver是用户真正访问Content Provider管理数据的接口。Content Resolver作为与Content Provider通讯的客户端，内部封装了与Content Provider进行(进程间)通讯的方法，用户不需要去关心内
+部的实现。当通过Content Resolver去查询数据的时候，实际上是Content Resolver通过URI中对应Content Provicer部分找到对应的Content Provider，把数据请求发送给对应的Content Provider，
+Content Provider再通过URI中对应表的路径部分找到需要查询的内容，把结果返回给Content Resolver。
+
+
+
+三、使用对应的Content Provider的应用程序需要且只能在Manifest.xml(无法在运行时)申请对应的权限。xml使用<uses-permission>来申请Content Provider权限，权限必须与Content Provider中定义的一致，如
+果在Content Provider中没有定义任何权限，表明没有任何一个其他application中的组件能够访问该Content Provider，只有定义该Content Provider本身的application中的组件才能够访问。
+
+
+
+四、query()的结果通过Cursor返回，如果返回的Cursor长度为0，代表没有符合条件的匹配项，如果返回的Cursor是null，代表查询过程中出现异常，查询可能还会同时抛出异常。如果想要把一个查询结果的Cursor
+和一个ListView关联，可以使用SimpleCursorAdapter，并且query()所列举的columns(Projection参数)一定要包含"_ID"字段，即使ListView不与该字段关联并显示。这也是为什么大多数Content Provider提供的表
+中都包含"_ID"字段的一个原因。
+
+
+
+五、Cursor内部的row point初始为-1，因此如果想要获取Cursor内部的数据，首先需要把row point移动到0，因此任何情况下拿到Cursor后第一步都是moveToNext()，否则从row point为-1位置获取数据将会产生一
+个异常。
+
+
+
+六、insert()和update()的数据使用ContentValues作为封装。
+
+
+
+七、Content Provider的访问除了正常情况的使用外，还提供了3种在特殊情况下的使用方式：
+
+	1.使用ContentProviderOperation以及ContentResolver.applyBatch()可以提供一个批处理的操作方式，可以一次对同一个Content Provider的一个或多个表进行多次操作，来作为一次事务处理。
+withValueBackReference可以把批处理中前几个的操作结果(返回值)，当作在其后的操作的参数来使用，比如在一个表进行插入操作后，把该插入操作后返回的row id插入另外一个表中，后一个操作就可以使用
+withValueBackReference来引用前一个操作返回的row id。
+
+	2.使用CursorLoader可以提供一个异步的操作方式(在一个独立的线程中进行)，具体可参考Loader的学习笔记。
+
+	3.通过发送Intent的形式，在Intent中带入Content Provider的URI，并且设置FLAG_GRANT_READ_URI_PERMISSION 或 FLAG_GRANT_WRITE_URI_PERMISSION，可以赋予接收该Intent的组件对该URI的一次性
+访问权限(组件退出后权限消失)，而不需要包含该组件的Application通过Manifest.xml<uses-permission>来申请Content Provider权限。使用前提是发送Intent的组件必须拥有该权限，并且Manifest.xml中
+<provider>需要定义android:grantUriPermission，为true表示，属于该<provider>任何URI都可以使用该功能，为false表示，在子节点<grant-uri-permission>中定义的URI才允许使用该功能，默认为false。
+
+
+
+八、每个Content Provider都应该定义一个Contract Class，用来对外提供访问该Content Provider需要用到的任何常量，比如表的URI，对应列的名字。Contract Class不应该包含在Content Provider内部，而是
+与Content Provider分开存放，并开放对使用者可见。Android平台Content Provider对应的Contract Classes都存放在android.provider包下，比如UserDictionary。
+
+
+
+九、Content Provider可以返回他所提供的URI所对应的MIME TYPE，来表示该URI代表的数据种类。除了标准的MIME TYPE以外，定义Content Provider的用户还能自定义其Content Provider所对应的MIME TYPE。
+MIME TYPE的标准格式是"type/subtype"，自定义MIME TYPE，type的类型总是vnd.android.cursor.dir来表示多个列，vnd.android.cursor.item来表示单个列，subtype则可以随意指定。例如：
+	1.给定URI"content://com.example.trains/Line1"，可以返回vnd.android.cursor.dir/vnd.example.line1。
+	  给定URI"content://com.example.trains/Line2/5"，可以返回vnd.android.cursor.item/vnd.example.line2。
+
+	Android平台Content Provider对应的自定义的MIME TYPE，也都存放在对应的的Contract Classes中。
+
+
+
+十、Content Provider中对应的一个表中的所有row对应的MIME TYPE应该都是一致的，即MIME TYPE应该是与表对应。如果想要一个表中的row具有不同的MIME TYPE，应该把MIME TYPE作为一个column或者使用BLOB
+数据类型作为一个column的数据类型，把所有的column集中到一个BLOB数据类型的column中。(BLOB是一个长度为64KB的byte数组)
